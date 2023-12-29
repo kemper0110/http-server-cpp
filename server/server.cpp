@@ -15,15 +15,21 @@ using tcp = asio::ip::tcp;
 
 
 asio::awaitable<void> serve(tcp::socket socket) {
-	std::string start_line;
-	const auto read_n = co_await asio::async_read_until(socket, asio::dynamic_buffer(start_line), '\n', asio::as_tuple(asio::use_awaitable));
+	std::string read_buffer;
+	auto offset = 0;
+	const auto [ec, read_n]= co_await asio::async_read_until(socket, asio::dynamic_buffer(read_buffer), "\r\n", asio::as_tuple(asio::use_awaitable));
+	std::string_view start_line = std::string_view(read_buffer.begin(), read_buffer.begin() + read_n);
+	std::cout << start_line;
+	offset += read_n;
 
-	std::unordered_map<const std::string, std::string> headers;
+	std::unordered_map<std::string, std::string> headers;
 	while (true) {
-		std::string header;
-		const auto read_n = co_await asio::async_read_until(socket, asio::dynamic_buffer(start_line), '\n', asio::as_tuple(asio::use_awaitable));
-		std::cout << header << '\n';
+		const auto [ec, read_n] = co_await asio::async_read_until(socket, asio::dynamic_buffer(read_buffer), "\r\n", asio::as_tuple(asio::use_awaitable));
+		const auto headline = read_buffer.substr(offset, read_n);
+		std::cout << headline;
+		offset += read_n;
 	}
+	socket.close();
 }
 
 asio::awaitable<void> listen_and_serve() {
