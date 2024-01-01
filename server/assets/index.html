@@ -1,0 +1,43 @@
+<html>
+<head>
+    <meta NAME="GENERATOR" Content="Microsoft Visual Studio">
+    <title>Aboba site</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <main class="w-full h-screen pt-12 px-12">
+        <section class="mx-auto min-w-[400px] w-full">
+            <h1 class="text-xl font-bold underline">Hello, this root page of cpp server</h1>
+            <span>
+                go to <a class="text-blue-500 hover:text-blue-800" href="/item.html">item page</a>
+            </span>
+            <div class="mt-2 flex gap-2">
+                <div class="border border-black p-3">
+                    fetched:
+                </div>
+                <div id="ajax" class="border border-black p-3">
+                    "empty"
+                </div>
+            </div>
+            <img src="/img/toro.jpg" class="mt-12 max-w-[300px]" />
+        </section>
+    </main>
+    <script>
+        (async () => {
+            const res = await fetch("/ajax")
+            const data = await res.json()
+            console.log(data)
+            const code = Object.entries(data).map(([key, value]) => (
+                `<div class="flex gap-2"> 
+                    <div class="shrink-0">${key}</div>
+                    <div class="">${value}</div>
+                </div>`
+            )).join('\n')
+            console.log(code)
+            ajax.innerHTML = code
+        })()
+    </script>
+</body>
+</html>
