@@ -9,7 +9,7 @@ void Controller::get(const Request& request, std::ostream& response)
 
 	std::ostringstream oss;
 	oss << '{';
-	for (const auto [key, value] : request.headers)
+	for (const auto& [key, value] : request.headers)
 		oss << std::quoted(key) << ':' << std::quoted(value) << ',';
 	oss << R"("cringe": "value"})";
 	
