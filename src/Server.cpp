@@ -5,8 +5,10 @@
 #include "Request.h"
 #include "Controller.h"
 #include "StaticMiddleware.h"
+#include "sendfile.h"
 #include <boost/asio.hpp>
 #include <boost/asio/co_spawn.hpp>
+#include <boost/asio/posix/stream_descriptor.hpp>
 
 namespace asio = boost::asio;
 using namespace boost::system;
@@ -14,12 +16,33 @@ using tcp = asio::ip::tcp;
 
 Server::Server() {
 
+    const auto filename = "../assets/img/toro.jpg";
+//        const auto filename = "../assets/index.html";
+//    const auto filename = "../assets/vkvia.html";
+
+    struct stat st;
+    stat(filename, &st);
+    this->length = st.st_size;
+
+    this->file = open(filename, O_RDONLY);
 }
 
 void Server::run() {
-    asio::io_context ioc(1);
+    const auto thread_count = 4;
+
+    asio::io_context ioc(thread_count);
+
     asio::co_spawn(ioc, listen_and_serve(), asio::detached);
-    ioc.run();
+
+    std::vector<std::thread> threads;
+    threads.reserve(thread_count);
+    for (int i = 0; i < thread_count; ++i) {
+        threads.emplace_back([&ioc] {
+            ioc.run();
+        });
+    }
+    for (auto &th: threads)
+        th.join();
 }
 
 /*
@@ -31,6 +54,7 @@ Accept: ..
 */
 
 inline asio::awaitable<void> Server::serve(tcp::socket socket) {
+    const auto ioc = co_await asio::this_coro::executor;
     const auto id = connection_id++;
     //std::cout << "new connection #" << id << '\n';
     auto response_count = 0;
@@ -76,27 +100,28 @@ inline asio::awaitable<void> Server::serve(tcp::socket socket) {
         asio::streambuf response_;
         std::ostream response_stream(&response_);
 
-        if (staticMiddleware.handle(request, response_stream)) {
-            controller.handle(request, response_stream);
-        }
+        response_stream << "HTTP/1.1 200 OK\r\n";
+        response_stream << "Content-Length: " << length << "\r\n";
+        response_stream << "\r\n";
 
         {
-            //std::cout << id << '#' << " responsing\n";
             const auto [ec, write_n] = co_await asio::async_write(socket, response_,
-                                                                  asio::as_tuple(asio::use_awaitable));
+                                                                  asio::as_tuple(asio::deferred));
             if (ec) {
-                //logger << ec.message() << '\n';
-                //std::cout << id << "# write err: " << ec.message() << '\n';
+                std::cout << id << "# write err: " << ec.message() << '\n';
                 break;
             }
-            //std::cout << id << '#' << " responsed: " << write_n << '\n';
         }
+
+        co_await async_sendfile(socket, file, 0, length);
 
         const auto connection = request.headers.find("Connection");
         if (
-                request.http_version == "HTTP/1.0" and (connection == request.headers.end() or connection->second != "keep-alive")
+                request.http_version == "HTTP/1.0" and
+                (connection == request.headers.end() or connection->second != "keep-alive")
                 or
-                request.http_version == "HTTP/1.1" and connection != request.headers.end() and connection->second == "close"
+                request.http_version == "HTTP/1.1" and connection != request.headers.end() and
+                connection->second == "close"
                 ) {
             //std::cout << id << "# not keep alive, closing\n";
             break;

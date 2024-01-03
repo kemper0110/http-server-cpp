@@ -18,5 +18,7 @@ private:
     boost::asio::awaitable<void> listen_and_serve();
 
     size_t connection_id = 0;
+    int file;
+    size_t length;
 };
 
