@@ -1,0 +1,20 @@
+
+POST localhost:2085/ajax HTTP/1.1
+
+{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}{"key": "value"}
+
+###
+POST localhost:2085/ajax HTTP/1.1
+
+{"key": "value"}
+
+###
+POST localhost:2085/ajax HTTP/1.1
+
+username=aboba&password=1234&password_confirmation=1234
+
+###
+PUT localhost:2085/ajax HTTP/1.1
+
+###
+GET localhost:2085/ HTTP/1.1

@@ -4,9 +4,24 @@
 #include "utils.h"
 
 
-bool StaticMiddleware::handle(const Request& request, std::ostream& response) {
+//        response_stream << "HTTP/1.1 200 OK\r\n";
+//        response_stream << "Content-Length: " << length << "\r\n";
+//        response_stream << "\r\n";
+//
+//        {
+//            const auto [ec, write_n] = co_await asio::async_write(socket, response_,
+//                                                                  asio::as_tuple(asio::deferred));
+//            if (ec) {
+//                std::cout << id << "# write err: " << ec.message() << '\n';
+//                break;
+//            }
+//        }
+//
+//        co_await async_sendfile(socket, file, 0, length);
+
+std::string StaticMiddleware::handle(const Request& request) {
 	if (request.method != "GET") 
-		return true;
+		return "";
 
 	std::string path = "../";
 	if (request.path == "/")
@@ -19,16 +34,9 @@ bool StaticMiddleware::handle(const Request& request, std::ostream& response) {
 
 	if (!static_exists) {
 //		std::cout << "file not found\n";
-		return true;
+		return "";
 	}
 
 //	std::cout << "file found\n";
-	std::string body = read_file_content(path);
-
-	response << "HTTP/1.1 200 OK\r\n";
-	response << "Content-Length: " << body.length() << "\r\n";
-	response << "\r\n";
-	response << body;
-
-	return false;
+    return read_file_content(path);
 }

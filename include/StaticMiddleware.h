@@ -6,6 +6,6 @@
 class StaticMiddleware
 {
 public:
-	bool handle(const Request& request, std::ostream& response);
+	std::string handle(const Request& request);
 };
 
